@@ -54,7 +54,7 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; onEnd: () => void }> = ({ t
   }, [trailerUrl, onEnd]);
 
   return (
-    <div className="video-container">
+    <div className="video-container mb-4">
       <div className="video-foreground">
         <iframe
           id="player-iframe"
@@ -71,7 +71,7 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; onEnd: () => void }> = ({ t
 const Game: React.FC = () => {
   const [timeline, setTimeline] = useState<Movie[]>([movies[0]]);  // Start with one movie as reference
   const [round, setRound] = useState(1);  // Current round
-  const [availableMovies, setAvailableMovies] = useState<Movie[]>(movies.slice(1));  // Movies not yet placed (excluding the first one)
+  const [availableMovies, setAvailableMovies] = useState<Movie[]>(movies.slice(1));  // Movies not yet placed
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);  // Current movie trailer playing
   const [score, setScore] = useState(0);  // Player score
 
@@ -144,61 +144,69 @@ const Game: React.FC = () => {
     setScore(newScore);
   };
 
-  const renderPlacementOptions = () => {
-    if (!timeline.length) {
-      return (
-        <>
-          <button onClick={() => handlePlacement('before')}>Place Before</button>
-          <button onClick={() => handlePlacement('after')}>Place After</button>
-        </>
-      );
-    }
+  const colorClasses = [
+    'from-1-color-400 to-1-color-600',
+    'from-2-color-400 to-2-color-600',
+    'from-3-color-400 to-3-color-600',
+    'from-4-color-400 to-4-color-600',
+    'from-5-color-400 to-5-color-600',
+    'from-6-color-400 to-6-color-600',
+    'from-7-color-400 to-7-color-600',
+    'from-8-color-400 to-8-color-600',
+    'from-9-color-400 to-9-color-600',
+    'from-10-color-400 to-10-color-600',
+  ];
 
+  const renderPlacementOptions = () => {
     return (
-      <>
-        <button onClick={() => handlePlacement('before')}>Place Before ({timeline[0].year})</button>
-        {timeline.map((movie, index) => {
-          if (index < timeline.length - 1) {
-            const nextMovie = timeline[index + 1];
-            return (
+      <div className="flex justify-center items-center space-x-4 mt-6">
+        <button
+          onClick={() => handlePlacement('before')}
+          className="bg-gray-500 text-white p-2 rounded text-sm font-bold shadow-lg hover:bg-gray-700 transition"
+        >
+          Place it here
+        </button>
+        {timeline.map((movie, index) => (
+          <React.Fragment key={index}>
+            <div className={`bg-gradient-to-br ${colorClasses[index % colorClasses.length]} p-2 rounded text-white shadow-lg text-center w-32`}>
+              {movie.name} ({movie.year})
+            </div>
+            {index < timeline.length - 1 && (
               <button
-                key={index}
                 onClick={() => handlePlacement('between', [index, index + 1])}
+                className="bg-gray-500 text-white p-2 rounded text-sm font-bold shadow-lg hover:bg-gray-700 transition"
               >
-                Place Between {movie.year} and {nextMovie.year}
+                Place it here
               </button>
-            );
-          }
-          return null;
-        })}
-        <button onClick={() => handlePlacement('after')}>Place After ({timeline[timeline.length - 1].year})</button>
-      </>
+            )}
+          </React.Fragment>
+        ))}
+        <button
+          onClick={() => handlePlacement('after')}
+          className="bg-gray-500 text-white p-2 rounded text-sm font-bold shadow-lg hover:bg-gray-700 transition"
+        >
+          Place it here
+        </button>
+      </div>
     );
   };
 
   return (
-    <div>
-      <h1>Movie Chronology Game</h1>
-      <p>Round: {round}/20</p>
-      <p>Build a timeline with 10 movies in the correct order!</p>
+    <div className="p-4 text-white">
+      <h1 className="text-6xl font-bold mb-4">Chronofilm 🎬</h1>
 
       {currentMovie && (
-        <>
+        <div className="mb-6">
           <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} onEnd={handleTrailerEnd} />
-          <div>{renderPlacementOptions()}</div>
-        </>
+        </div>
       )}
+      <p className="mb-2 text-lg">Round: {round}/20</p>
+      <p className="mb-4 text-lg">Build a timeline with 10 movies in the correct order!</p>
+      <h2 className="mt-8 text-2xl font-bold">Your Timeline</h2>
 
-      <h2>Your Timeline</h2>
-      <ul>
-        {timeline.map((movie, index) => (
-          <li key={index}>
-            {movie.name} ({movie.year})
-          </li>
-        ))}
-      </ul>
+      {renderPlacementOptions()}
 
-      <p>Score: {score}</p>
+      <p className="mt-4 text-xl">Score: {score}</p>
     </div>
   );
 };
