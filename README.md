@@ -81,3 +81,7 @@ export const movies = [
 ## License
 
 This project is licensed under the MIT License.
+
+## Commercial Use
+
+While this project is licensed under the MIT License, any **commercial use** of this code requires a commercial license agreement with the author. If you are using this code in a product that generates revenue, please contact [your email] for licensing terms. Failure to comply with these terms may result in legal action.
