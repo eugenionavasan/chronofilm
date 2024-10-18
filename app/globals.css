@@ -28,8 +28,9 @@ body {
 
 /* Global styles or a specific CSS file */
 .video-container {
-  width: 100vw;
-  height: 100vh;
+  width: 80vw;
+  height: 80vh;
+  margin-left: 200px;
   overflow: hidden;
   position: relative;
 }
@@ -45,4 +46,29 @@ body {
 
 .video-foreground {
   pointer-events: none; /* Prevent interaction with video */
+}
+
+.unmute-button {
+  position: relative;
+  z-index: 10; /* Ensure it appears above the video */
+  pointer-events: auto; /* Make sure the button can be clicked */
+  background-color: rgba(23, 217, 2, 0.7); /* Add a background to make it visible */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.mute-button {
+  position: relative;
+  z-index: 10; /* Ensure it appears above the video */
+  pointer-events: auto; /* Make sure the button can be clicked */
+  background-color: rgba(255, 0, 0, 0.7); /* Red background for mute button */
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
 }

@@ -16,11 +16,12 @@ interface YT {
       playerVars: {
         autoplay: 1;
         modestbranding: 1;
-        controls: 1;
+        controls: 0;
         rel: 0;
+        mute: 1 | 0; // Expecting either 1 (muted) or 0 (unmuted)
       };
       events: {
-        onReady: (event: { target: { playVideo: () => void; stopVideo: () => void } }) => void;
+        onReady: (event: { target: { playVideo: () => void } }) => void;
       };
     }): void;
   };
@@ -34,24 +35,30 @@ declare global {
   }
 }
 
-const YouTubeTrailer: React.FC<{ trailerUrl: string; onEnd: () => void }> = ({ trailerUrl, onEnd }) => {
+const YouTubeTrailer: React.FC<{ trailerUrl: string; unmuteVideo: boolean; onEnd: () => void }> = ({ trailerUrl, unmuteVideo, onEnd }) => {
+  const [isMuted, setIsMuted] = useState(unmuteVideo); // Track mute state
+
   useEffect(() => {
     const videoId = new URLSearchParams(new URL(trailerUrl).search).get('v') || undefined;
 
-    const iframeUrl = `https://www.youtube.com/embed/${videoId}?controls=0&showinfo=0&rel=0&autoplay=1&loop=1&playlist=${videoId}&mute=1`;
+    const iframeUrl = `https://www.youtube.com/embed/${videoId}?controls=0&showinfo=0&rel=0&autoplay=1&mute=${isMuted ? 1 : 0}`;
 
     const iframe = document.getElementById('player-iframe') as HTMLIFrameElement;
     if (iframe) {
       iframe.src = iframeUrl;
     }
 
-    // Simulate video end after 30 seconds (as YouTube's autoplay does not stop automatically)
+    // Simulate video end after 30 seconds
     const timeout = setTimeout(() => {
       onEnd();
     }, 30000);
 
-    return () => clearTimeout(timeout); // Clean up the timeout when component unmounts
-  }, [trailerUrl, onEnd]);
+    return () => clearTimeout(timeout);
+  }, [trailerUrl, isMuted, onEnd]);
+
+  const toggleMute = () => {
+    setIsMuted((prevState) => !prevState); // Toggle between mute and unmute
+  };
 
   return (
     <div className="video-container mb-4">
@@ -64,20 +71,37 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; onEnd: () => void }> = ({ t
           allowFullScreen
         />
       </div>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={toggleMute}
+            className={isMuted ? "unmute-button" : "mute-button"} /* Toggle between classes */
+          >
+            {isMuted ? "Unmute 🔊" : "Mute 🔇"} {/* Change text based on state */}
+          </button>
+        </div>
     </div>
   );
 };
 
 const Game: React.FC = () => {
-  const [timeline, setTimeline] = useState<Movie[]>([movies[0]]);  // Start with one movie as reference
-  const [round, setRound] = useState(1);  // Current round
-  const [availableMovies, setAvailableMovies] = useState<Movie[]>(movies.slice(1));  // Movies not yet placed
+  const [timeline, setTimeline] = useState<Movie[]>([]);  // Start empty, will add reference on game start
+  const [round, setRound] = useState(0);  // Start at 0 to indicate game hasn't started
+  const [availableMovies, setAvailableMovies] = useState<Movie[]>(movies);  // All movies available initially
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);  // Current movie trailer playing
   const [score, setScore] = useState(0);  // Player score
 
+  const startGame = () => {
+    const firstMovie = availableMovies[0];
+    setTimeline([firstMovie]);  // Start with the first movie as reference
+    setAvailableMovies(availableMovies.slice(1));  // Remove reference movie from available movies
+    setRound(1);  // Set to round 1
+    const nextMovie = getRandomMovie(availableMovies.slice(1));
+    setCurrentMovie(nextMovie);  // Start with a random movie
+  };
+
   useEffect(() => {
-    // Randomly pick a movie at the start of each round
-    if (availableMovies.length > 0) {
+    // Pick a new random movie at the start of each round
+    if (round > 0 && availableMovies.length > 0) {
       const nextMovie = getRandomMovie(availableMovies);
       setCurrentMovie(nextMovie);
     }
@@ -119,18 +143,22 @@ const Game: React.FC = () => {
     if (isCorrectPlacement) {
       setTimeline(newTimeline);
       updateScore(newTimeline);
+
+      // Move to the next round and auto-play the next trailer
+      const nextMovie = getRandomMovie(availableMovies.filter(movie => movie.name !== currentMovie.name));
+      setAvailableMovies(availableMovies.filter(movie => movie.name !== currentMovie.name));  // Update available movies
+      setCurrentMovie(nextMovie);  // Set the next movie to play automatically
     }
 
-    // Move to the next round regardless of correctness
-    setAvailableMovies(availableMovies.filter(movie => movie.name !== currentMovie.name));
-    setRound(round + 1);
+    setRound(round + 1);  // Update the round regardless of correctness
   };
 
   const handleTrailerEnd = () => {
-    // Automatically trigger the next trailer
+    // Automatically trigger the next trailer when the video ends or after 30 seconds
     if (availableMovies.length > 0) {
-      const nextMovie = getRandomMovie(availableMovies);
-      setCurrentMovie(nextMovie);
+      const nextMovie = getRandomMovie(availableMovies.filter(movie => movie.name !== currentMovie?.name));
+      setCurrentMovie(nextMovie);  // Move to the next movie
+      setRound(round + 1);  // Move to the next round
     }
   };
 
@@ -193,20 +221,30 @@ const Game: React.FC = () => {
 
   return (
     <div className="p-4 text-white">
-      <h1 className="text-6xl font-bold mb-4">Chronofilm 🎬</h1>
+      <h1 className="text-6xl font-bold mb-4 flex justify-center">Chronofilm 🎬</h1>
 
-      {currentMovie && (
-        <div className="mb-6">
-          <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} onEnd={handleTrailerEnd} />
+      {round === 0 ? (
+        <div className="flex justify-center items-center h-screen">
+          <button onClick={startGame} className="bg-green-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-green-700 transition duration-300">
+            Start Game! 😁
+          </button>
         </div>
+      ) : (
+        <>
+          {currentMovie && (
+            <div className="mb-6">
+              <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} unmuteVideo={true} onEnd={handleTrailerEnd} />
+            </div>
+          )}
+          <p className="mb-2 text-lg">Round: {round}/20</p>
+          <p className="mb-4 text-lg">Build a timeline with 10 movies in the correct order!</p>
+          <h2 className="mt-8 text-2xl font-bold">Your Timeline⏳</h2>
+
+          {renderPlacementOptions()}
+
+          <p className="mt-4 text-xl">Score: {score}</p>
+        </>
       )}
-      <p className="mb-2 text-lg">Round: {round}/20</p>
-      <p className="mb-4 text-lg">Build a timeline with 10 movies in the correct order!</p>
-      <h2 className="mt-8 text-2xl font-bold">Your Timeline</h2>
-
-      {renderPlacementOptions()}
-
-      <p className="mt-4 text-xl">Score: {score}</p>
     </div>
   );
 };
