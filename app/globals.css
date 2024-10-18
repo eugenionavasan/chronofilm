@@ -25,3 +25,24 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Global styles or a specific CSS file */
+.video-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + 120px);
+  pointer-events: none; /* Prevent interaction with video */
+}
+
+.video-foreground {
+  pointer-events: none; /* Prevent interaction with video */
+}
