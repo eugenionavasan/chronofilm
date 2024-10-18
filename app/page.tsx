@@ -61,7 +61,7 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; unmuteVideo: boolean; onEnd
   };
 
   return (
-    <div className="video-container mb-4">
+    <div className="video-container h-3/5">
       <div className="video-foreground">
         <iframe
           id="player-iframe"
@@ -69,16 +69,17 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; unmuteVideo: boolean; onEnd
           frameBorder="0"
           allow="autoplay"
           allowFullScreen
+          className="w-full h-full"
         />
       </div>
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={toggleMute}
-            className={isMuted ? "unmute-button" : "mute-button"} /* Toggle between classes */
-          >
-            {isMuted ? "Unmute 🔊" : "Mute 🔇"} {/* Change text based on state */}
-          </button>
-        </div>
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={toggleMute}
+          className={isMuted ? "unmute-button" : "mute-button"}
+        >
+          {isMuted ? "Unmute 🔊" : "Mute 🔇"}
+        </button>
+      </div>
     </div>
   );
 };
@@ -220,7 +221,7 @@ const Game: React.FC = () => {
   };
 
   return (
-    <div className="p-4 text-white">
+    <div className="p-4 text-white h-screen flex flex-col justify-between">
       <h1 className="text-6xl font-bold mb-4 flex justify-center">Chronofilm 🎬</h1>
 
       {round === 0 ? (
@@ -231,18 +232,21 @@ const Game: React.FC = () => {
         </div>
       ) : (
         <>
-          {currentMovie && (
-            <div className="mb-6">
+          <div className="video-container mb-6 flex-grow">
+            {currentMovie && (
               <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} unmuteVideo={true} onEnd={handleTrailerEnd} />
-            </div>
-          )}
-          <p className="mb-2 text-lg">Round: {round}/20</p>
-          <p className="mb-4 text-lg">Build a timeline with 10 movies in the correct order!</p>
-          <h2 className="mt-8 text-2xl font-bold">Your Timeline⏳</h2>
+            )}
+          </div>
+          
+          <div className="timeline-container h-2/5 flex-grow">
+            <p className="mb-2 text-lg">Round: {round}/20</p>
+            <p className="mb-4 text-lg">Build a timeline with 10 movies in the correct order!</p>
+            <h2 className="mt-8 text-2xl font-bold">Your Timeline⏳</h2>
 
-          {renderPlacementOptions()}
+            {renderPlacementOptions()}
 
-          <p className="mt-4 text-xl">Score: {score}</p>
+            <p className="mt-4 text-xl">Score: {score}</p>
+          </div>
         </>
       )}
     </div>
