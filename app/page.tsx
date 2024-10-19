@@ -8,7 +8,7 @@ const getRandomMovie = (availableMovies: Movie[]): Movie => {
   return availableMovies[randomIndex];
 };
 
-// Define the YT interface
+// Define the YT interface for YouTube player
 interface YT {
   Player: {
     new (elementId: string, options: {
@@ -91,8 +91,7 @@ const Game: React.FC = () => {
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);  // Current movie trailer playing
   const [score, setScore] = useState(0);  // Player score
   const [gameStatus, setGameStatus] = useState<"playing" | "win" | "lose">("playing");  // Game status
-
-  const timelineRef = useRef<HTMLDivElement>(null); // Ref to the timeline container
+  const timelineRef = useRef<HTMLDivElement>(null);
 
   // Function to scroll to the start of the timeline if the first movie is out of view
   const scrollToVisible = () => {
@@ -134,7 +133,7 @@ const Game: React.FC = () => {
     }
 
     // Game over condition: reached 20 rounds without winning
-    if (round >= 20 && score < 10) {
+    if (round >= 21 && score < 10) {
       setGameStatus("lose");
     }
   }, [round, availableMovies, score, gameStatus]);
@@ -219,8 +218,15 @@ const Game: React.FC = () => {
   ];
 
   const renderPlacementOptions = () => {
+    // Check if the timeline has fewer than 5 movies, and center the content if true
+    const isCentered = timeline.length < 5;
+  
     return (
-      <div className="flex items-center space-x-4 overflow-x-visible py-2 w-full">
+      <div
+        className={`flex items-center space-x-4 overflow-x-visible py-2 w-full ${
+          isCentered ? 'justify-center' : 'justify-start'
+        }`}
+      >
         <button
           onClick={() => handlePlacement('before')}
           className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
