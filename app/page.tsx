@@ -90,45 +90,56 @@ const Game: React.FC = () => {
   const [availableMovies, setAvailableMovies] = useState<Movie[]>(movies);  // All movies available initially
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);  // Current movie trailer playing
   const [score, setScore] = useState(0);  // Player score
+  const [gameStatus, setGameStatus] = useState<"playing" | "win" | "lose">("playing");  // Game status
 
+  // Function to start the game
   const startGame = () => {
     const firstMovie = availableMovies[0];
-    setTimeline([firstMovie]);  // Start with the first movie as reference
+    setTimeline([firstMovie]);  // Add the first movie as reference in the timeline
     setAvailableMovies(availableMovies.slice(1));  // Remove reference movie from available movies
-    setRound(1);  // Set to round 1
+    setRound(1);  // Start at round 1
+    setScore(0);  // Reset score
+    setGameStatus("playing");  // Reset game status
     const nextMovie = getRandomMovie(availableMovies.slice(1));
-    setCurrentMovie(nextMovie);  // Start with a random movie
+    setCurrentMovie(nextMovie);  // Set the next movie to play
   };
 
   useEffect(() => {
-    // Pick a new random movie at the start of each round
-    if (round > 0 && availableMovies.length > 0) {
+    if (round > 0 && availableMovies.length > 0 && gameStatus === "playing") {
       const nextMovie = getRandomMovie(availableMovies);
-      setCurrentMovie(nextMovie);
+      setCurrentMovie(nextMovie);  // Set the next movie to play
     }
-  }, [round, availableMovies]);
 
+    // Win condition: score of 10
+    if (score >= 10) {
+      setGameStatus("win");
+    }
+
+    // Game over condition: reached 20 rounds without winning
+    if (round >= 20 && score < 10) {
+      setGameStatus("lose");
+    }
+  }, [round, availableMovies, score, gameStatus]);
+
+  // Function to handle placement logic
   const handlePlacement = (position: 'before' | 'after' | 'between', betweenIndexes?: [number, number]) => {
-    if (!currentMovie) return;
+    if (!currentMovie || gameStatus !== "playing") return;
 
     let newTimeline = [...timeline];
     let isCorrectPlacement = true;
 
     if (position === 'before') {
-      // Check if placing the current movie before the first movie is correct
       isCorrectPlacement = currentMovie.year <= timeline[0].year;
       if (isCorrectPlacement) {
         newTimeline = [currentMovie, ...timeline];
       }
     } else if (position === 'after') {
-      // Check if placing the current movie after the last movie is correct
       isCorrectPlacement = currentMovie.year >= timeline[timeline.length - 1].year;
       if (isCorrectPlacement) {
         newTimeline = [...timeline, currentMovie];
       }
     } else if (position === 'between' && betweenIndexes) {
       const [beforeIndex, afterIndex] = betweenIndexes;
-      // Check if placing the current movie between two specific movies is correct
       isCorrectPlacement =
         currentMovie.year >= timeline[beforeIndex].year &&
         currentMovie.year <= timeline[afterIndex].year;
@@ -145,21 +156,19 @@ const Game: React.FC = () => {
       setTimeline(newTimeline);
       updateScore(newTimeline);
 
-      // Move to the next round and auto-play the next trailer
       const nextMovie = getRandomMovie(availableMovies.filter(movie => movie.name !== currentMovie.name));
-      setAvailableMovies(availableMovies.filter(movie => movie.name !== currentMovie.name));  // Update available movies
-      setCurrentMovie(nextMovie);  // Set the next movie to play automatically
+      setAvailableMovies(availableMovies.filter(movie => movie.name !== currentMovie.name));
+      setCurrentMovie(nextMovie);
     }
 
-    setRound(round + 1);  // Update the round regardless of correctness
+    setRound(round + 1);
   };
 
   const handleTrailerEnd = () => {
-    // Automatically trigger the next trailer when the video ends or after 30 seconds
-    if (availableMovies.length > 0) {
+    if (availableMovies.length > 0 && gameStatus === "playing") {
       const nextMovie = getRandomMovie(availableMovies.filter(movie => movie.name !== currentMovie?.name));
-      setCurrentMovie(nextMovie);  // Move to the next movie
-      setRound(round + 1);  // Move to the next round
+      setCurrentMovie(nextMovie);
+      setRound(round + 1);
     }
   };
 
@@ -185,6 +194,7 @@ const Game: React.FC = () => {
     'from-9-color-400 to-9-color-600',
     'from-10-color-400 to-10-color-600',
   ];
+
 
   const renderPlacementOptions = () => {
     return (
@@ -228,6 +238,20 @@ const Game: React.FC = () => {
         <div className="flex justify-center items-center h-screen">
           <button onClick={startGame} className="bg-green-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-green-700 transition duration-300">
             Start Game! 😁
+          </button>
+        </div>
+      ) : gameStatus === "win" ? (
+        <div className="flex flex-col justify-center items-center h-screen">
+          <h2 className="text-4xl font-bold text-green-500 text-center">Congratulations! You know your movies!</h2>
+          <button onClick={startGame} className="bg-blue-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 mt-6">
+            Play Again
+          </button>
+        </div>
+        ) : gameStatus === "lose" ? (
+        <div className="flex flex-col justify-center items-center h-screen">
+          <h2 className="text-4xl font-bold text-red-500 text-center">Game Over! You should watch some more movies!</h2>
+          <button onClick={startGame} className="bg-blue-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 mt-6">
+            Play Again
           </button>
         </div>
       ) : (
