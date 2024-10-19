@@ -51,7 +51,7 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; unmuteVideo: boolean; onEnd
     // Simulate video end after 30 seconds
     const timeout = setTimeout(() => {
       onEnd();
-    }, 30000);
+    }, 40000);
 
     return () => clearTimeout(timeout);
   }, [trailerUrl, isMuted, onEnd]);
