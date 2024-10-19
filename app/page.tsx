@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { movies, Movie } from '@/data/movieData'; // Import the movie data
 
 const getRandomMovie = (availableMovies: Movie[]): Movie => {
@@ -61,8 +61,8 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; unmuteVideo: boolean; onEnd
   };
 
   return (
-    <div className="video-container h-3/5">
-      <div className="video-foreground">
+    <div className="relative w-full h-full">
+      <div className="absolute inset-0">
         <iframe
           id="player-iframe"
           src=""
@@ -72,10 +72,10 @@ const YouTubeTrailer: React.FC<{ trailerUrl: string; unmuteVideo: boolean; onEnd
           className="w-full h-full"
         />
       </div>
-      <div className="flex justify-center mt-4">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
         <button
           onClick={toggleMute}
-          className={isMuted ? "unmute-button" : "mute-button"}
+          className={`${isMuted ? "unmute-button" : "mute-button"} text-sm`}
         >
           {isMuted ? "Unmute 🔊" : "Mute 🔇"}
         </button>
@@ -92,9 +92,26 @@ const Game: React.FC = () => {
   const [score, setScore] = useState(0);  // Player score
   const [gameStatus, setGameStatus] = useState<"playing" | "win" | "lose">("playing");  // Game status
 
+  const timelineRef = useRef<HTMLDivElement>(null); // Ref to the timeline container
+
+  // Function to scroll to the start of the timeline if the first movie is out of view
+  const scrollToVisible = () => {
+    const timelineEl = timelineRef.current;
+    if (timelineEl) {
+      const firstButton = timelineEl.querySelector('button'); // Get the first button (Insert here)
+      if (firstButton) {
+        const buttonRect = firstButton.getBoundingClientRect();
+        const timelineRect = timelineEl.getBoundingClientRect();
+
+        if (buttonRect.left < timelineRect.left) {
+          timelineEl.scrollTo({ left: 0, behavior: 'smooth' }); // Scroll to the beginning if the first button is hidden
+        }
+      }
+    }
+  };
+
   // Function to start the game
   const startGame = () => {
-    // Select a random reference movie
     const firstMovie = getRandomMovie(movies);
     setTimeline([firstMovie]);  // Add the random first movie as reference in the timeline
     setAvailableMovies(movies.filter(movie => movie.name !== firstMovie.name));  // Remove reference movie from available movies
@@ -121,6 +138,11 @@ const Game: React.FC = () => {
       setGameStatus("lose");
     }
   }, [round, availableMovies, score, gameStatus]);
+
+  useEffect(() => {
+    // Scroll to make sure the first item is visible
+    scrollToVisible();
+  }, [timeline]); // Run every time the timeline updates
 
   // Function to handle placement logic
   const handlePlacement = (position: 'before' | 'after' | 'between', betweenIndexes?: [number, number]) => {
@@ -198,80 +220,92 @@ const Game: React.FC = () => {
 
   const renderPlacementOptions = () => {
     return (
-      <div className="flex justify-center items-center space-x-4 mt-6">
+      <div className="flex items-center space-x-4 overflow-x-visible py-2 w-full">
         <button
           onClick={() => handlePlacement('before')}
-          className="bg-gray-500 text-white p-2 rounded text-sm font-bold shadow-lg hover:bg-gray-700 transition"
+          className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
         >
-          Place it here
+          Insert here
         </button>
         {timeline.map((movie, index) => (
           <React.Fragment key={index}>
-            <div className={`bg-gradient-to-br ${colorClasses[index % colorClasses.length]} p-2 rounded text-white shadow-lg text-center w-32`}>
-              {movie.name} ({movie.year})
+            <div
+              className={`bg-gradient-to-br ${colorClasses[index % colorClasses.length]} rounded text-white shadow-lg text-center w-32 h-32 flex items-center justify-center p-2`}
+            >
+              <span className="text-xs">{movie.name} ({movie.year})</span>
             </div>
             {index < timeline.length - 1 && (
               <button
                 onClick={() => handlePlacement('between', [index, index + 1])}
-                className="bg-gray-500 text-white p-2 rounded text-sm font-bold shadow-lg hover:bg-gray-700 transition"
+                className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
               >
-                Place it here
+                Insert here
               </button>
             )}
           </React.Fragment>
         ))}
         <button
           onClick={() => handlePlacement('after')}
-          className="bg-gray-500 text-white p-2 rounded text-sm font-bold shadow-lg hover:bg-gray-700 transition"
+          className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
         >
-          Place it here
+          Insert here
         </button>
       </div>
     );
   };
 
   return (
-    <div className="p-4 text-white h-screen flex flex-col justify-between">
-      <h1 className="text-6xl font-bold mb-4 flex justify-center">Chronofilm 🎬</h1>
+    <div className="flex flex-col h-screen p-4 text-white overflow-visible">
+      <h1 className="text-4xl md:text-6xl font-bold mb-2 text-center absolute top-0 z-10 bg-opacity-100 bg-black py-2 w-full">
+        Chronofilm 🎬
+      </h1>
 
       {round === 0 ? (
-        <div className="flex justify-center items-center h-screen">
+        <div className="flex-grow flex justify-center items-center">
           <button onClick={startGame} className="bg-green-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-green-700 transition duration-300">
             Start Game! 😁
           </button>
         </div>
       ) : gameStatus === "win" ? (
-        <div className="flex flex-col justify-center items-center h-screen">
-          <h2 className="text-4xl font-bold text-green-500 text-center">Congratulations! You know your movies!</h2>
+        <div className="flex-grow flex flex-col justify-center items-center">
+          <h2 className="text-4xl font-bold text-green-500 text-center">Move over, Scorsese! 🎥 There’s a new movie expert in town! 🍿✨</h2>
           <button onClick={startGame} className="bg-blue-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 mt-6">
             Play Again
           </button>
         </div>
-        ) : gameStatus === "lose" ? (
-        <div className="flex flex-col justify-center items-center h-screen">
-          <h2 className="text-4xl font-bold text-red-500 text-center">Game Over! You should watch some more movies!</h2>
+      ) : gameStatus === "lose" ? (
+        <div className="flex-grow flex flex-col justify-center items-center">
+          <h2 className="text-4xl font-bold text-red-500 text-center">Game Over! 🎬 Looks like it’s time for a movie marathon! 🍿 Better start brushing up! 📽️</h2>
           <button onClick={startGame} className="bg-blue-500 text-white px-8 py-4 text-3xl rounded-lg shadow-lg hover:bg-blue-700 transition duration-300 mt-6">
             Play Again
           </button>
         </div>
       ) : (
-        <>
-          <div className="video-container mb-6 flex-grow">
+        <div className="flex-grow flex flex-col">
+          <div className="flex-grow relative" style={{ marginTop: '-50px', height: 'calc(80vh + 60px)', overflow: 'hidden' }}>
             {currentMovie && (
-              <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} unmuteVideo={true} onEnd={handleTrailerEnd} />
+              <div style={{ pointerEvents: 'none', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+                <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} unmuteVideo={true} onEnd={handleTrailerEnd} />
+              </div>
             )}
           </div>
           
-          <div className="timeline-container h-2/5 flex-grow">
-            <p className="mb-2 text-lg">Round: {round}/20</p>
-            <p className="mb-4 text-lg">Build a timeline with 10 movies in the correct order!</p>
-            <h2 className="mt-8 text-2xl font-bold">Your Timeline⏳</h2>
+          <div className="min-h-[20vh] flex flex-col justify-end mt-4" ref={timelineRef}>
+            <h2 className="text-2xl font-bold">Your Timeline⏳</h2>
+            <p className="mb-2 text-lg">Build a timeline with 10 movies in the correct order!</p>
 
-            {renderPlacementOptions()}
+            <div className="overflow-x-visible py-2">
+              <div className="flex items-center space-x-4 justify-center">
+                {renderPlacementOptions()}
+              </div>
+            </div>
 
-            <p className="mt-4 text-xl">Score: {score}</p>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-lg">Round: {round}/20</p>
+              <p className="text-xl">Score: {score}</p>
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
