@@ -94,13 +94,14 @@ const Game: React.FC = () => {
 
   // Function to start the game
   const startGame = () => {
-    const firstMovie = availableMovies[0];
-    setTimeline([firstMovie]);  // Add the first movie as reference in the timeline
-    setAvailableMovies(availableMovies.slice(1));  // Remove reference movie from available movies
+    // Select a random reference movie
+    const firstMovie = getRandomMovie(movies);
+    setTimeline([firstMovie]);  // Add the random first movie as reference in the timeline
+    setAvailableMovies(movies.filter(movie => movie.name !== firstMovie.name));  // Remove reference movie from available movies
     setRound(1);  // Start at round 1
     setScore(0);  // Reset score
     setGameStatus("playing");  // Reset game status
-    const nextMovie = getRandomMovie(availableMovies.slice(1));
+    const nextMovie = getRandomMovie(movies.filter(movie => movie.name !== firstMovie.name));
     setCurrentMovie(nextMovie);  // Set the next movie to play
   };
 
@@ -194,7 +195,6 @@ const Game: React.FC = () => {
     'from-9-color-400 to-9-color-600',
     'from-10-color-400 to-10-color-600',
   ];
-
 
   const renderPlacementOptions = () => {
     return (
