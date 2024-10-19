@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { movies, Movie } from '@/data/movieData'; // Import the movie data
 
+
 const getRandomMovie = (availableMovies: Movie[]): Movie => {
   const randomIndex = Math.floor(Math.random() * availableMovies.length);
   return availableMovies[randomIndex];
@@ -262,8 +263,8 @@ const Game: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen p-4 text-white overflow-visible">
-      <h1 className="text-4xl md:text-6xl font-bold mb-2 text-center absolute top-0 z-10 bg-opacity-100 bg-black py-2 w-full">
-        Chronofilm 🎬
+      <h1 className="text-4xl md:text-6xl font-bold mb-2 text-center absolute top-0 z-10 bg-opacity-100 bg-black py-2 w-full font-corleone">
+        ChronoFilm @
       </h1>
 
       {round === 0 ? (

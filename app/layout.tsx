@@ -13,6 +13,16 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+const corleone = localFont({
+  src: [
+    {
+      path: "./fonts/corleone.regular.ttf",
+      weight: "700",
+    }
+  ],
+  variable: "--font-corleone",
+});
+
 export const metadata: Metadata = {
   title: "Chronofilm 🎬",
   description: "Proof your movie knowledge",
@@ -26,7 +36,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased ${corleone.variable}`
+      }
       >
         {children}
       </body>

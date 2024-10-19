@@ -22,6 +22,9 @@ const config: Config = {
         '9-color': { 400: '#4ADE80', 600: '#22C55E' },  // Lime Green
         '10-color': { 400: '#F87171', 600: '#DC2626' }, // Dark Red
       },
+      fontFamily: {
+        corleone:["var(--font-corleone)"] 
+      },
     },
   },
   plugins: [],
