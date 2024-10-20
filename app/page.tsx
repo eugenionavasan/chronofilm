@@ -232,7 +232,7 @@ const Game: React.FC = () => {
             <div
               className={`bg-gradient-to-br ${colorClasses[index % colorClasses.length]} rounded text-white shadow-lg text-center w-20 h-20 flex items-center justify-center p-1 flex-shrink-0`}
             >
-              <span className="text-[10px]">{movie.name} ({movie.year})</span>
+              <span className="text-[12px] font-bold">{movie.name} ({movie.year})</span>
             </div>
             {index < timeline.length - 1 && (
               <button
