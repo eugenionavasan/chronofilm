@@ -219,51 +219,44 @@ const Game: React.FC = () => {
   ];
 
   const renderPlacementOptions = () => {
-    // Check if the timeline has fewer than 5 movies, and center the content if true
-    const isCentered = timeline.length < 5;
-  
     return (
-      <div
-        className={`flex items-center space-x-4 overflow-x-visible py-2 w-full ${
-          isCentered ? 'justify-center' : 'justify-start'
-        }`}
-      >
+      <>
         <button
           onClick={() => handlePlacement('before')}
-          className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
+          className="bg-purple-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
         >
-          Insert here
+          Insert
         </button>
         {timeline.map((movie, index) => (
           <React.Fragment key={index}>
             <div
-              className={`bg-gradient-to-br ${colorClasses[index % colorClasses.length]} rounded text-white shadow-lg text-center w-32 h-32 flex items-center justify-center p-2`}
+              className={`bg-gradient-to-br ${colorClasses[index % colorClasses.length]} rounded text-white shadow-lg text-center w-20 h-20 flex items-center justify-center p-1 flex-shrink-0`}
             >
-              <span className="text-xs">{movie.name} ({movie.year})</span>
+              <span className="text-[10px]">{movie.name} ({movie.year})</span>
             </div>
             {index < timeline.length - 1 && (
               <button
                 onClick={() => handlePlacement('between', [index, index + 1])}
-                className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
+                className="bg-purple-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
               >
-                Insert here
+                Insert
               </button>
             )}
           </React.Fragment>
         ))}
         <button
           onClick={() => handlePlacement('after')}
-          className="bg-purple-500 text-white px-4 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
+          className="bg-purple-500 text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg hover:bg-purple-600 transition flex-shrink-0"
         >
-          Insert here
+          Insert
         </button>
-      </div>
+      </>
     );
   };
 
   return (
-    <div className="flex flex-col h-screen p-4 text-white overflow-visible">
-      <h1 className="text-4xl md:text-6xl font-bold mb-2 text-center absolute top-0 z-10 bg-opacity-100 bg-black py-2 w-full font-corleone">
+    <div className="flex flex-col h-screen p-4 text-white overflow-hidden relative">
+      <h1 className="text-2xl md:text-4xl font-bold text-center z-10 bg-opacity-100 bg-black py-1 w-full font-corleone absolute top-0 left-0 right-0">
         ChronoFilm @
       </h1>
 
@@ -288,8 +281,8 @@ const Game: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="flex-grow flex flex-col">
-          <div className="flex-grow relative" style={{ marginTop: '-50px', height: 'calc(80vh + 60px)', overflow: 'hidden' }}>
+        <div className="flex flex-col h-full pt-12"> {/* Added pt-12 for header space */}
+          <div className="flex-grow relative" style={{ marginTop: '-80px', height: 'calc(75vh + 50px)', overflow: 'hidden' }}>
             {currentMovie && (
               <div style={{ pointerEvents: 'none', position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
                 <YouTubeTrailer trailerUrl={currentMovie.trailerUrl} unmuteVideo={true} onEnd={handleTrailerEnd} />
@@ -297,19 +290,19 @@ const Game: React.FC = () => {
             )}
           </div>
           
-          <div className="min-h-[20vh] flex flex-col justify-end mt-4" ref={timelineRef}>
-            <h2 className="text-2xl font-bold">Your Timeline⏳</h2>
-            <p className="mb-2 text-lg">Build a timeline with 10 movies in the correct order!</p>
+          <div className="flex flex-col justify-end h-[25vh] pb-4"> {/* Added pb-4 for bottom padding */}
+            <h2 className="text-xl font-bold">Your Timeline⏳</h2>
+            <p className="mb-1 text-sm">Build a timeline with 10 movies in the correct order!</p>
 
-            <div className="overflow-x-visible py-2">
-              <div className="flex items-center space-x-4 justify-center">
+            <div className="overflow-x-visible py-1 flex-grow">
+              <div className="flex items-center space-x-2 h-full">
                 {renderPlacementOptions()}
               </div>
             </div>
 
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-lg">Round: {round}/20</p>
-              <p className="text-xl">Score: {score}</p>
+            <div className="flex justify-between items-center mt-1 text-sm">
+              <p>Round: {round}/20</p>
+              <p>Score: {score}</p>
             </div>
           </div>
         </div>
